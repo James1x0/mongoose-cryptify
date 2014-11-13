@@ -1,0 +1,39 @@
+{
+  "name": "mongoose-cryptify",
+  "version": "0.0.1",
+  "description": "Mongoose.js plugin for model path encryption via bcrypt",
+  "main": "mongoose-cryptify.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha \"test/**/*.js\" --reporter=spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/james1x0/mongoose-cryptify"
+  },
+  "keywords": [
+    "mongoose",
+    "encryption",
+    "models",
+    "data",
+    "security"
+  ],
+  "author": "James Collins",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/james1x0/mongoose-cryptify/issues"
+  },
+  "homepage": "https://github.com/james1x0/mongoose-cryptify",
+  "devDependencies": {
+    "chai": "^1.10.0",
+    "mocha": "^2.0.1",
+    "mongoose": "^3.8.19"
+  },
+  "dependencies": {
+    "bcrypt": "^0.8.0",
+    "bluebird": "^2.3.11",
+    "lodash": "^2.4.1"
+  }
+}
