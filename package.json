@@ -1,6 +1,6 @@
 {
   "name": "mongoose-cryptify",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Mongoose.js plugin for model path encryption via bcrypt",
   "main": "mongoose-cryptify.js",
   "directories": {
