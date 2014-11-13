@@ -33,7 +33,6 @@
   },
   "dependencies": {
     "bcrypt": "^0.8.0",
-    "bluebird": "^2.3.11",
-    "lodash": "^2.4.1"
+    "bluebird": "^2.3.11"
   }
 }

@@ -2,16 +2,16 @@
 var chai   = require('chai'),
     expect = chai.expect;
 
-var mongoose = require('mongoose');
+var mongoose = require('mongoose'),
+    cryptify = require( '../' + require('../package.json').main ),
+    bcp      = require('bcrypt');
 
-var cryptify = require( '../' + require('../package.json').main ),
-    bcp        = require('bcrypt');
-
-describe('SchemaPlugin :: Cryptify', function () {
+describe('Cryptify', function () {
   var _model;
 
   beforeEach(function ( done ) {
     mongoose.connect('localhost/cryptify-test');
+
     _model = new mongoose.Schema({
       secured: {
         data: String
@@ -30,7 +30,7 @@ describe('SchemaPlugin :: Cryptify', function () {
     });
   });
 
-  it('should encrypt fields', function ( done ) {
+  it('should encrypt paths', function ( done ) {
     var _schema = _model.plugin(cryptify, {
       paths: [ 'secured.data', 'securedPath' ],
       factor: 10
