@@ -7,9 +7,9 @@ var mongoose = require('mongoose'),
     bcp      = require('bcrypt');
 
 describe('Cryptify', function () {
-  var _model;
+  var _model, testModel;
 
-  beforeEach(function ( done ) {
+  before(function ( done ) {
     mongoose.connect('localhost/cryptify-test');
 
     _model = new mongoose.Schema({
@@ -19,10 +19,17 @@ describe('Cryptify', function () {
       securedPath: String
     });
 
+    var _schema = _model.plugin(cryptify, {
+      paths: [ 'secured.data', 'securedPath' ],
+      factor: 10
+    });
+
+    testModel = mongoose.model('CryptifyTest', _schema);
+
     done();
   });
 
-  afterEach(function ( done ) {
+  after(function ( done ) {
     mongoose.connection.db.dropDatabase(function () {
       mongoose.disconnect(function () {
         done();
@@ -31,13 +38,6 @@ describe('Cryptify', function () {
   });
 
   it('should encrypt paths', function ( done ) {
-    var _schema = _model.plugin(cryptify, {
-      paths: [ 'secured.data', 'securedPath' ],
-      factor: 10
-    });
-
-    var testModel = mongoose.model('CryptifyTest', _schema);
-
     var testRecord = new testModel({
       secured: {
         data: 'test'
@@ -65,6 +65,33 @@ describe('Cryptify', function () {
 
         expect(bcp.compareSync('test3', doc.securedPath)).to.equal(true);
         expect(bcp.compareSync('test2', doc.securedPath)).to.equal(false);
+
+        done();
+      });
+    });
+  });
+
+  it('should handle undefined paths', function ( done ) {
+    var testRecord = new testModel({
+      secured: {
+        data: 'test'
+      }
+    });
+
+    testRecord.save(function ( err, doc ) {
+      if( err ) {
+        throw err;
+      }
+
+      expect(doc, 'document').to.exist; // jshint ignore:line
+
+      expect(doc.securedPath).not.to.exist;
+
+      doc.securedPath = 'test2';
+
+      doc.save(function ( err, updated ) {
+        expect(err).to.not.exist;
+        expect(bcp.compareSync('test2', updated.securedPath)).to.equal(true);
 
         done();
       });

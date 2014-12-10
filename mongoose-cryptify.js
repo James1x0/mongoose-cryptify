@@ -49,7 +49,13 @@ function Cryptify ( schema, options ) {
     };
 
     Promise.reduce(paths, function ( doc, path ) {
-      return _generateHash( getPathValue( path ), workFactor ).then(function ( hash ) {
+      var raw = getPathValue( path );
+
+      if( !raw ) {
+        return doc;
+      }
+
+      return _generateHash( raw , workFactor ).then(function ( hash ) {
         setPathValue( doc, path, hash );
         return doc;
       });
