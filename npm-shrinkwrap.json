@@ -1,6 +1,6 @@
 {
   "name": "mongoose-cryptify",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "dependencies": {
     "bcrypt": {
       "version": "0.8.0",

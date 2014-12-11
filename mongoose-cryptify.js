@@ -28,40 +28,33 @@ function Cryptify ( schema, options ) {
   schema.pre('save', function ( next ) {
     var doc = this;
 
-    var getPathValue = function ( pathArray ) {
-      var recursive = doc;
-
-      pathArray.forEach(function ( subpath ) {
-        recursive = recursive[ subpath ];
-      });
-
-      return recursive;
-    };
-
-    var setPathValue = function ( recursive, pathArray, value ) {
-      var len = pathArray.length - 1;
-
-      for ( var i = 0; i < len; i++ ) {
-        recursive = recursive[ pathArray[ i ] ];
+    var parseDocument = function ( err, previous ) {
+      if( err ) {
+        next( err );
       }
 
-      recursive[ pathArray[ len ] ] = value;
+      Promise.reduce(paths, function ( doc, path ) {
+        var raw           = _getPathValue( doc, path ),
+            previousValue = ( previous ) ? _getPathValue( previous, path ) : false;
+
+        if( !raw || ( !!previousValue && previousValue === raw ) ) {
+          return doc;
+        }
+
+        return _generateHash( raw , workFactor ).then(function ( hash ) {
+          _setPathValue( doc, path, hash );
+          return doc;
+        });
+      }, doc).then(function ( newDoc ) {
+        next.call( newDoc );
+      }).catch( next );
     };
 
-    Promise.reduce(paths, function ( doc, path ) {
-      var raw = getPathValue( path );
-
-      if( !raw ) {
-        return doc;
-      }
-
-      return _generateHash( raw , workFactor ).then(function ( hash ) {
-        setPathValue( doc, path, hash );
-        return doc;
-      });
-    }, doc).then(function ( newDoc ) {
-      next.call( newDoc );
-    }).catch( next );
+    if( doc.isNew ) {
+      parseDocument();
+    } else {
+      doc.constructor.findById(doc._id, parseDocument);
+    }
   });
 
   return schema;
@@ -91,4 +84,28 @@ function _generateHash ( raw, workFactor ) {
       });
     });
   });
+}
+
+/**
+ * Get Path Value
+ * @param  {Object} recursive Object to traverse
+ * @param  {Array} pathArray  Array of paths
+ * @return {Mixed}            Value
+ */
+function _getPathValue ( recursive, pathArray ) {
+  pathArray.forEach(function ( subpath ) {
+    recursive = recursive[ subpath ];
+  });
+
+  return recursive;
+}
+
+function _setPathValue ( recursive, pathArray, value ) {
+  var len = pathArray.length - 1;
+
+  for ( var i = 0; i < len; i++ ) {
+    recursive = recursive[ pathArray[ i ] ];
+  }
+
+  recursive[ pathArray[ len ] ] = value;
 }

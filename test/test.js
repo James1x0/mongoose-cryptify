@@ -3,11 +3,19 @@ var chai   = require('chai'),
     expect = chai.expect;
 
 var mongoose = require('mongoose'),
-    cryptify = require( '../' + require('../package.json').main ),
     bcp      = require('bcrypt');
 
+var createModel = function ( name, schema ) {
+  try {
+    return mongoose.model( name );
+  } catch ( err ) {
+    return mongoose.model( name, schema );
+  }
+};
+
 describe('Cryptify', function () {
-  var _model, testModel;
+  var _model, testModel,
+      cryptify = require( '../' + require('../package.json').main );
 
   before(function ( done ) {
     mongoose.connect('localhost/cryptify-test');
@@ -24,7 +32,7 @@ describe('Cryptify', function () {
       factor: 10
     });
 
-    testModel = mongoose.model('CryptifyTest', _schema);
+    testModel = createModel('CryptifyTest', _schema);
 
     done();
   });
@@ -46,9 +54,7 @@ describe('Cryptify', function () {
     });
 
     testRecord.save(function ( err, doc ) {
-      if( err ) {
-        throw err;
-      }
+      if( err ) throw err;
 
       expect(doc, 'document').to.exist; // jshint ignore:line
 
@@ -61,7 +67,7 @@ describe('Cryptify', function () {
       doc.securedPath = 'test3';
 
       doc.save(function ( err, doc ) {
-        expect(err).to.not.exist;
+        if( err ) throw err;
 
         expect(bcp.compareSync('test3', doc.securedPath)).to.equal(true);
         expect(bcp.compareSync('test2', doc.securedPath)).to.equal(false);
@@ -79,19 +85,40 @@ describe('Cryptify', function () {
     });
 
     testRecord.save(function ( err, doc ) {
-      if( err ) {
-        throw err;
-      }
+      if( err ) throw err;
 
-      expect(doc, 'document').to.exist; // jshint ignore:line
+      expect(doc, 'document').to.exist;
 
       expect(doc.securedPath).not.to.exist;
 
       doc.securedPath = 'test2';
 
       doc.save(function ( err, updated ) {
-        expect(err).to.not.exist;
+        if( err ) throw err;
+
         expect(bcp.compareSync('test2', updated.securedPath)).to.equal(true);
+
+        done();
+      });
+    });
+  });
+
+  it('should handle updates', function ( done ) {
+    var testRecord = new testModel({
+      secured: {
+        data: 'test'
+      }
+    });
+
+    testRecord.save(function ( err, doc ) {
+      if( err ) throw err;
+
+      doc.securedPath = 'test';
+
+      doc.save(function ( err, updated ) {
+        if( err ) throw err;
+
+        expect(bcp.compareSync('test', updated.secured.data)).to.equal(true);
 
         done();
       });
