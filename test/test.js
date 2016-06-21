@@ -5,6 +5,8 @@ var chai   = require('chai'),
 var mongoose = require('mongoose'),
     bcp      = require('bcrypt');
 
+mongoose.Promise = require('bluebird');
+
 var createModel = function ( name, schema ) {
   try {
     return mongoose.model( name );
@@ -24,11 +26,12 @@ describe('Cryptify', function () {
       secured: {
         data: String
       },
-      securedPath: String
+      securedPath: String,
+      password: String
     });
 
     var _schema = _model.plugin(cryptify, {
-      paths: [ 'secured.data', 'securedPath' ],
+      paths: [ 'secured.data', 'securedPath', 'password' ],
       factor: 10
     });
 
@@ -122,6 +125,38 @@ describe('Cryptify', function () {
 
         done();
       });
+    });
+  });
+
+  describe('Cryptify#comparePassword', () => {
+    it('should test true', done => {
+      var testRecord = new testModel({
+        password: 'test'
+      });
+
+      testRecord.save().then(doc => {
+        return doc.compareHash('test');
+      })
+      .then(result => {
+        expect(result).to.be.true;
+        done();
+      })
+      .catch(done);
+    });
+
+    it('should test false', done => {
+      var testRecord = new testModel({
+        password: 'test'
+      });
+
+      testRecord.save().then(doc => {
+        return doc.compareHash('nottest');
+      })
+      .then(result => {
+        expect(result).to.be.false;
+        done();
+      })
+      .catch(done);
     });
   });
 });

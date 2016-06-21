@@ -2,14 +2,14 @@
   Mongoose Cryptify
 */
 
-var bcp     = require('bcrypt'),
-    Promise = require('bluebird'); // jshint ignore:line
+var bcp      = require('bcrypt'),
+    Promise  = require('bluebird'); // jshint ignore:line
 
 module.exports = Cryptify;
 
 /**
  * Cryptify Plugin Signature
- * 
+ *
  * @param  {Object} schema  Mongoose Schema
  * @param  {Object} options Options Hash
  * @return {Object}         Mongoose Schema
@@ -57,6 +57,22 @@ function Cryptify ( schema, options ) {
     }
   });
 
+  if ( options.disableComparator !== false ) {
+    schema.methods.compareHash = function ( rhs, path ) {
+      var modelPath = path || 'password';
+
+      return new Promise((resolve, reject) => {
+        bcp.compare(rhs, this[modelPath], function (err, res) {
+          if ( err ) {
+            return reject(err);
+          }
+
+          resolve(res);
+        })
+      });
+    }
+  }
+
   return schema;
 }
 
@@ -64,7 +80,7 @@ function Cryptify ( schema, options ) {
  * Generate Hash
  *
  * @private
- * 
+ *
  * @param  {String} raw
  * @return {Promise}
  */
