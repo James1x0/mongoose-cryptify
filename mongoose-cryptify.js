@@ -70,7 +70,7 @@ function Cryptify ( schema, options ) {
           resolve(res);
         })
       });
-    }
+    };
   }
 
   return schema;
