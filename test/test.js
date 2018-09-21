@@ -20,7 +20,7 @@ describe('Cryptify', function () {
       cryptify = require( '../' + require('../package.json').main );
 
   before(function ( done ) {
-    mongoose.connect('localhost/cryptify-test');
+    mongoose.connect('mongodb://localhost/cryptify-test', { useNewUrlParser: true });
 
     _model = new mongoose.Schema({
       secured: {
